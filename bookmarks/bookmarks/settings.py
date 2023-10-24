@@ -104,7 +104,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
 
@@ -122,3 +122,16 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# LOGIN_REDIRECT_URL: сообщает Django URL-адрес, на который следует перенаправлять
+# пользователя после успешного входа, если в запросе нет
+# параметра next;
+LOGIN_REDIRECT_URL = 'dashboard'
+
+# LOGIN_URL: URL-адрес, на который следует перенаправлять пользователя
+# чтобы зарегистрировать его вход (например, представления, в которых
+# используется декоратор login_required);
+LOGIN_URL = 'login'
+
+#  LOGOUT_URL: URL-адрес, на который следует перенаправлять пользователя, чтобы зарегистрировать его выход.
+LOGOUT_URL = 'logout'
