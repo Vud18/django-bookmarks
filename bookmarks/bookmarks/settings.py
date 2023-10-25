@@ -135,3 +135,7 @@ LOGIN_URL = 'login'
 
 #  LOGOUT_URL: URL-адрес, на который следует перенаправлять пользователя, чтобы зарегистрировать его выход.
 LOGOUT_URL = 'logout'
+
+# Настроечный параметр EMAIL_BACKEND указывает класс, который будет использоваться для отправки электронной почты.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
