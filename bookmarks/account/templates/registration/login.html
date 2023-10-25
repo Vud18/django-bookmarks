@@ -10,7 +10,10 @@
       Please try again.
     </p>
   {% else %}
-    <p>Пожалуйста, используйте следующую форму для входа:</p>
+    <p>
+      Если у вас еще нету учётной записи
+      <a href="{% url "register" %}"> Регистрация</a>
+    </p>
   {% endif %}
   <div class="login-form">
     <form action="{% url 'login' %}" method="post">
