@@ -1,5 +1,24 @@
 from django import forms
 from django.contrib.auth.models import User
+from .models import Profile
+
+
+class UserEditForm(forms.ModelForm):
+    # serEditForm позволит пользователям редактировать свое имя, фамилию
+    # и адрес электронной почты, которые являются атрибутами встроенной
+    # в Django модели User;
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+
+
+class ProfileEditForm(forms.ModelForm):
+    # ProfileEditForm позволит пользователям редактировать данные профиля,
+    # сохраненные в конкретно-прикладной модели Profile. Пользователи смогут
+    # редактировать дату своего рождения и закачивать изоражение на сайт в качестве фотоснимка профиля.
+    class Meta:
+        model = Profile
+        fields = ['date_of_birth', 'photo']
 
 
 class LoginForm(forms.Form):
