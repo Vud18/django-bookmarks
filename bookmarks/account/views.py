@@ -14,6 +14,8 @@ def register(request):
             # но пока не сохранять его
             new_user = user_form.save(commit=False)
             # установить выбраный пароль
+            # set_password Данный метод хеширует пароль перед его сохранением в базе
+            # данных
             new_user.set_password(
                 user_form.cleaned_data['password'])
             # Сохранить объект User
@@ -21,12 +23,12 @@ def register(request):
             return render(request,
                           'account/register_done.html',
                           {'new_user': new_user})
-        else:
-            user_form = UserRegistrationForm()
+    else:
+        user_form = UserRegistrationForm()
 
-        return render(request,
-                      'account/register_done.html',
-                      {'user_form': user_form})
+    return render(request,
+                  'account/register.html',
+                  {'user_form': user_form})
 
 
 @login_required
@@ -52,7 +54,7 @@ def user_login(request):
             cd = form.cleaned_data
             user = authenticate(request,
                                 username=cd['username'],
-                                password=cd['password'],)
+                                password=cd['password'], )
             if user is not None:
                 if user.is_active:
                     login(request, user)
