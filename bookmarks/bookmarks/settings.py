@@ -147,3 +147,12 @@ MEDIA_URL = 'media/'
 # формируются динамически посредством добавления к ним пути проекта или
 # URL-адреса медиафайлов в качестве префикса с целью переносимости.
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# В данном настроечном параметре мы оставляем стандартный ModelBackend,
+# который используется для аутентификации с помощью пользовательского имени
+# и пароля, и вставляем наш собственный бэкенд аутентификации
+# с применением электронной почты EmailAuthBackend
+AUTHENTICATION_BACKENDS = [
+ 'django.contrib.auth.backends.ModelBackend',
+ 'account.authentication.EmailAuthBackend',
+]
