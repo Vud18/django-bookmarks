@@ -41,6 +41,8 @@ class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
 
+def govno():
+    pass
 
 class UserRegistrationForm(forms.ModelForm):
     # Здесь была создана модельная форма для модели пользователя. Данная
