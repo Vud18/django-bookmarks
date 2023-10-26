@@ -11,6 +11,17 @@ class UserEditForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'email']
 
+    # В данном случае мы добавили валидацию поля email, чтобы пользователи
+    # не могли изменять свой бывший адрес электронной почты на существующий
+    # адрес электронной почты другого пользователя
+    def clean_email(self):
+        data = self.cleaned_data['email']
+        qs = User.objects.exclude(id=self.instance.id)\
+            .filter(email=data)
+        if qs.exists():
+            raise forms.ValidationError('Почта уже используется')
+        return data
+
 
 class ProfileEditForm(forms.ModelForm):
     # ProfileEditForm позволит пользователям редактировать данные профиля,
@@ -49,3 +60,12 @@ class UserRegistrationForm(forms.ModelForm):
         if cd['password'] != cd['password2']:
             raise forms.ValidationError('Passwords don\'t match.')
         return cd['password']
+
+    # добавили валидацию поля электронной почты, которая не позволяет
+    # пользователям регистрироваться с уже существующим адресом электронной
+    # почты.
+    def clean_email(self):
+        data = self.cleaned_data['email']
+        if User.objects.filter(email=data).exist():
+            raise forms.ValidationError('Пользователь с таким почтовым адресов уже есть!')
+        return data
