@@ -162,3 +162,23 @@ AUTHENTICATION_BACKENDS = [
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '705382662914-uett911041ae3dm3mhhvn2umo0tnmknm.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+# В настоящее время при создании новых пользователей с помощью социальной аутентификации
+# объект Profile не создается. Мы добавим в конвейер
+# новый шаг, чтобы автоматически создавать объект Profile в базе данных при
+# формировании нового пользователя.
+# Это конвейер аутентификации, используемый механизмом Python Social
+# Auth по умолчанию, если не указан иной. Он состоит из нескольких функций,
+# которые выполняют разную работу при аутентификации пользователя
+SOCIAL_AUTH_PIPELINE = [
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'account.authentication.create_profile',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+]
