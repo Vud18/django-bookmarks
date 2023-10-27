@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-7+8r_rolm&-ubfyx(2r^q+vg1kw@4h^2h8$eow0vrx=)hb!bfr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['mysite.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'social_django',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -153,6 +155,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # и пароля, и вставляем наш собственный бэкенд аутентификации
 # с применением электронной почты EmailAuthBackend
 AUTHENTICATION_BACKENDS = [
- 'django.contrib.auth.backends.ModelBackend',
- 'account.authentication.EmailAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+    'account.authentication.EmailAuthBackend',
+    'social_core.backends.google.GoogleOAuth2',
 ]
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '705382662914-uett911041ae3dm3mhhvn2umo0tnmknm.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
