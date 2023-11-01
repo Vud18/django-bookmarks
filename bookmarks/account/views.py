@@ -115,8 +115,6 @@ def user_login(request):
 @login_required
 def user_list(request):
     users = User.objects.filter(is_active=True)
-    user = User.objects.latest('id')
-    print(str(user.get_absolute_url()))
     return render(request,
                   'account/user/list.html',
                   {'section': 'people',
@@ -132,7 +130,6 @@ def user_detail(request, username):
     user = get_object_or_404(User,
                              username=username,
                              is_active=True)
-    print("found user:", user)
     return render(request,
                   'account/user/detail.html',
                   {'section': 'people',
