@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditForm
 from .models import Profile
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
 
 
 @login_required
@@ -102,3 +104,36 @@ def user_login(request):
     else:
         form = LoginForm()
     return render(request, 'account/login.html', {'form': form})
+
+
+#  Представление user_list получает всех активных пользователей.
+# Модель User содержит флаг is_active, который маркирует, считается учетная
+# запись пользователя активной или нет. Запрос фильтруется по параметру
+# is_active=True, чтобы возвращать только активных пользователей.
+# Это представление возвращает все результаты, но его можно улучшить,
+# добавив постраничную разбивку так же, как это делалось для представления image_list.
+@login_required
+def user_list(request):
+    users = User.objects.filter(is_active=True)
+    user = User.objects.latest('id')
+    print(str(user.get_absolute_url()))
+    return render(request,
+                  'account/user/list.html',
+                  {'section': 'people',
+                   'users': users})
+
+
+# В представлении user_detail используется функция сокращенного доступа
+# get_object_or_404(), чтобы извлекать активного пользователя с переданным
+# пользовательским именем (username). Данное представление возвращает
+# HTTP-ответ 404, если активный пользователь с переданным пользовательским именем не найден
+@login_required
+def user_detail(request, username):
+    user = get_object_or_404(User,
+                             username=username,
+                             is_active=True)
+    print("found user:", user)
+    return render(request,
+                  'account/user/detail.html',
+                  {'section': 'people',
+                   'user': user})
