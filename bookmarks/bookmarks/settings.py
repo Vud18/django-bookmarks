@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+from django.urls import reverse_lazy
 from pathlib import Path
 from dotenv import load_dotenv
 import os
@@ -18,7 +18,6 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -30,7 +29,6 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = ['mysite.com', 'localhost', '127.0.0.1']
-
 
 # Application definition
 
@@ -46,9 +44,12 @@ INSTALLED_APPS = [
     'django_extensions',
     'images.apps.ImagesConfig',
     'easy_thumbnails',
+    'actions.apps.ActionsConfig',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -78,7 +79,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bookmarks.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -88,7 +88,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -108,7 +107,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -119,7 +117,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
@@ -189,7 +186,15 @@ SOCIAL_AUTH_PIPELINE = [
     'social_core.pipeline.user.user_details',
 ]
 
-# if DEBUG:
-#     import mimetypes
-#     mimetypes.add_type('application/javascript', '.js', True)
-#     mimetypes.add_type('text/css', '.css', True)
+ABSOLUTE_URL_OVERRIDES = {
+    'auth.user': lambda u: reverse_lazy('user_detail',
+                                        args=[u.username])
+}
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
+
+REDIS_HOST = os.environ.get('REDIS_HOST')
+REDIS_PORT = os.environ.get('REDIS_PORT')
+REDIS_DB = os.environ.get('REDIS_DB')

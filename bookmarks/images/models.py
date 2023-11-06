@@ -43,6 +43,7 @@ class Image(models.Model):
     users_like = models.ManyToManyField(settings.AUTH_USER_MODEL,
                                         related_name='images_liked',
                                         blank=True)
+    total_likes = models.PositiveIntegerField(default=0)
 
     class Meta:
         # Индексы базы данных повышают производительность запросов.
@@ -51,6 +52,7 @@ class Image(models.Model):
         # Поля ForeignKey либо поля с параметром unique=True подразумевают создание индекса.
         indexes = [
             models.Index(fields=['-created']),
+            models.Index(fields=['-total_likes']),
         ]
         ordering = ['-created']
 

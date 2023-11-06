@@ -7,8 +7,16 @@ from .models import Image
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
-from django.core.paginator import Paginator, EmptyPage,\
+from django.core.paginator import Paginator, EmptyPage, \
     PageNotAnInteger
+from actions.utils import create_action
+import redis
+from django.conf import settings
+
+# соединение с redis
+r = redis.Redis(host=settings.REDIS_HOST,
+                port=settings.REDIS_PORT,
+                db=settings.REDIS_DB, )
 
 
 #  представление image_create был добавлен декоратор login_required, чтобы предотвращать
@@ -46,6 +54,7 @@ def image_create(request):
             # назначить текущего пользователя элементу
             new_image.user = request.user
             new_image.save()
+            create_action(request, 'bookmarked image', new_image)
             messages.success(request, 'Image added successfully')
             # перенаправить к представлению детальной
             # информации о только что созданном элементе
@@ -63,10 +72,21 @@ def image_create(request):
 def image_detail(request, id, slug):
     # Это представление вывода изображения на страницу
     image = get_object_or_404(Image, id=id, slug=slug)
+    # увеличить общее число просмотров изображения на 1
+    total_views = r.incr(f'image:{image.id}:views')
+    # Увеличить рейтинг изображения на 1
+    # Команда zincrby() используется для сохранения просмотров изображений
+    # в сортированном множестве с ключом image:ranking. В нем будут храниться
+    # id изображения и соответствующий балл, равный 1, который будет добавлен
+    # к общему баллу этого элемента сортированного множества. Такой подход
+    # позволит отслеживать все просмотры изображений в глобальном масштабе
+    # и иметь сортированное множество, упорядоченное по общему числу просмотров.
+    r.zincrby('image_ranking', 1, image.id)
     return render(request,
                   'images/image/detail.html',
                   {'section': 'images',
-                   'image': image})
+                   'image': image,
+                   'total_views': total_views})
 
 
 # В новом представлении использованы два декоратора. Декоратор login_required
@@ -84,6 +104,7 @@ def image_like(request):
             image = Image.objects.get(id=image_id)
             if action == 'like':
                 image.users_like.add(request.user)
+                create_action(request.user, 'likes', image)
             else:
                 image.users_like.remove(request.user)
             return JsonResponse({'status': 'ok'})
@@ -139,3 +160,19 @@ def image_list(request):
                   'images/image/list.html',
                   {'section': 'images',
                    'images': images})
+
+
+@login_required
+def image_ranking(request):
+    # Получить словарь рейтинга изображений
+    image_ranking = r.zrange('image_ranking', 0, -1,
+                             desc=True)[:10]
+    image_ranking_ids = [int(id) for id in image_ranking]
+    # получить наиболее просматриваемые изображения
+    most_viewed = list(Image.objects.filter(
+        id__in=image_ranking_ids))
+    most_viewed.sort(key=lambda x: image_ranking_ids.index(x.id))
+    return render(request,
+                  'images/image/ranking.html',
+                  {'section': 'images',
+                   'most_viewed': most_viewed})
