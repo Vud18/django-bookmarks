@@ -8,6 +8,8 @@ from .models import Profile, Contact
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST
+from actions.utils import create_action
+from actions.models import Action
 
 
 @login_required
@@ -59,6 +61,7 @@ def register(request):
             new_user.save()
             # Создать профиль пользователя
             Profile.objects.create(user=new_user)
+            create_action(new_user, 'has created an account')
             return render(request,
                           'account/register_done.html',
                           {'new_user': new_user})
@@ -76,11 +79,42 @@ def register(request):
 # представление; если пользователь не аутентифицирован, то оно перенаправляет
 # пользователя на URL-адрес входа с изначально запрошенным URL-адресом в качестве GET-параметра с именем next.
 def dashboard(request):
+    # По умолчанию показать все действия
+    actions = Action.objects.exclude(user=request.user)
+    following_ids = request.user.following.values_list('id',
+                                                       flat=True)
+    if following_ids:
+        # Если пользователь подписан на других,
+        # то извлечь только их действия
+        actions = actions.select_related('user', 'user__profile')[:10]\
+                      .prefetch_related('target')[:10]
+        # Аргумент user__profile используется для того, чтобы выполнять операцию
+        # соединения на таблице Profile в одном SQL-запросе. Если вызвать select_related()
+        # без передачи каких-либо аргументов, то он будет извлекать объекты
+        # из всех взаимосвязей с внешними ключами ForeignKey.
+        # Следует всегда ограничивать метод select_related() взаимосвязями, которые будут доступны
+        # позже.
+
+    actions = actions[:10]
     # Мы также определили переменную section.
     # Эта переменная будет использоваться для подсвечивания текущего раздела в главном меню сайта.
+    """
+    В приведенном выше представлении из базы данных извлекаются все 
+    действия, за исключением тех, которые выполняются текущим пользователем.
+     По умолчанию извлекаются последние действия, выполненные всеми 
+    пользователями на платформе. Если пользователь подписан на других пользователей,
+     то запрос ограничивается, чтобы получать только те действия, 
+    которые выполняются пользователями, на которых он подписан. Наконец, 
+    результат ограничивается первыми 10 возвращаемыми действиями. Метод 
+    order_by() в наборе запросов QuerySet не используется,
+     потому что вы опираетесь на заранее заданный порядок сортировки, указанный в Meta-опциях 
+    модели Action. Недавние действия будут первыми, поскольку в модели Action
+    было задано ordering = ['-created'].
+    """
     return render(request,
                   'account/dashboard.html',
-                  {'selection': 'dashboard'})
+                  {'section': 'dashboard',
+                   'actions': actions})
 
 
 def user_login(request):
@@ -149,6 +183,7 @@ def user_follow(request):
                 Contact.objects.get_or_create(
                     user_form=request.user,
                     user_to=user)
+                create_action(request.user, 'is following', user)
             else:
                 Contact.objects.filter(user_form=request.user,
                                        user_to=user).delete()
